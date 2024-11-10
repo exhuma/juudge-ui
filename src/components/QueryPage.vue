@@ -74,10 +74,25 @@
             <v-card-text>
               Name: {{ context.metadata.name }} <br />
               Type: {{ context.metadata.type }} <br />
-              Identifiers: {{ JSON.stringify(context.metadata.identifiers) }}
+              Identifiers: {{ JSON.stringify(identifiers) }}
               <br />
               Raw:
               <p>{{ context.raw_content }}</p>
+              <hr class="my-2"/>
+              <ul class="ml-4" v-if="scryfallIdentifiers(context).length > 0">
+                <li
+                  v-for="identifier in scryfallIdentifiers(context)"
+                  :key="identifier"
+                >
+                  Scryfall Tagger:
+                  <a
+                    target="_blank"
+                    :href="`https://tagger.scryfall.com/card/oracle/${identifier}`"
+                  >
+                    {{ identifier }}
+                  </a>
+                </li>
+              </ul>
             </v-card-text>
           </v-card>
         </v-col>
@@ -129,5 +144,18 @@ const sendQuery = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+const scryfallIdentifiers = (context: ContextInfo): string[] => {
+  const output: string[] = [];
+  if (!context.metadata.identifiers) {
+    return output;
+  }
+  Object.entries(context.metadata.identifiers).map(([key, value]) => {
+    if (key === "scryfallOracleId") {
+      output.push(value);
+    }
+  });
+  return output;
 };
 </script>
