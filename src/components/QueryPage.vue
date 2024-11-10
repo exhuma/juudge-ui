@@ -133,8 +133,7 @@ const sendQuery = async () => {
     return;
   }
   loading.value = true;
-  console.log(apiUrl);
-  const service = new ApiService(apiUrl, {username, password});
+  const service = new ApiService(apiUrl, { username, password });
   try {
     const result = await service.query(query.value);
     response.value = result.answer;
