@@ -74,7 +74,7 @@
             <v-card-text>
               Name: {{ context.metadata.name }} <br />
               Type: {{ context.metadata.type }} <br />
-              Identifiers {{ JSON.stringify(context.metadata.identifiers) }}
+              Identifiers: {{ JSON.stringify(context.metadata.identifiers) }}
               <br />
               Raw:
               <p>{{ context.raw_content }}</p>
