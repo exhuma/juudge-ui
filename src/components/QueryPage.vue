@@ -99,11 +99,17 @@ const loading = ref(false);
 // Access the global config value
 const instance = getCurrentInstance();
 let apiUrl = "http://localhost:8000";
+let username = "john.doe";
+let password = "secret";
 if (instance) {
   const { proxy } = instance;
   if (proxy) {
     // @ts-expect-error "$config" is injected and unknown by TS
     apiUrl = proxy.$config.apiUrl;
+    // @ts-expect-error "$config" is injected and unknown by TS
+    username = proxy.$config.username;
+    // @ts-expect-error "$config" is injected and unknown by TS
+    password = proxy.$config.password;
   }
 }
 
@@ -113,7 +119,7 @@ const sendQuery = async () => {
   }
   loading.value = true;
   console.log(apiUrl);
-  const service = new ApiService(apiUrl);
+  const service = new ApiService(apiUrl, {username, password});
   try {
     const result = await service.query(query.value);
     response.value = result.answer;
