@@ -89,23 +89,37 @@
 <script setup lang="ts">
 import { ApiService } from "@/core/apiservice";
 import { ContextInfo } from "@/remoteModel/QueryResponse";
-import { ref } from "vue";
+import { ref, getCurrentInstance } from "vue";
 
 const response = ref("");
 const contexts = ref([] as ContextInfo[]);
 const query = ref("");
 const loading = ref(false);
 
+// Access the global config value
+const instance = getCurrentInstance();
+let apiUrl = "http://localhost:8000";
+if (instance) {
+  const { proxy } = instance;
+  if (proxy) {
+    // @ts-expect-error "$config" is injected and unknown by TS
+    apiUrl = proxy.$config.apiUrl;
+  }
+}
+
 const sendQuery = async () => {
   if (!query.value.trim()) {
     return;
   }
   loading.value = true;
-  const service = new ApiService("http://localhost:8000");
+  console.log(apiUrl);
+  const service = new ApiService(apiUrl);
   try {
     const result = await service.query(query.value);
     response.value = result.answer;
     contexts.value = result.contexts;
+  } catch (error) {
+    console.error("Failed to send query:", error);
   } finally {
     loading.value = false;
   }

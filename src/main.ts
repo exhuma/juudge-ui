@@ -15,11 +15,25 @@ import { createApp } from 'vue'
 
 // Function to fetch configuration
 async function fetchConfig() {
-  const response = await fetch('/config.json')
-  if (!response.ok) {
-    throw new Error('Failed to fetch configuration')
-  }
-  return response.json()
+    const controller = new AbortController()
+    const signal = controller.signal
+
+    try {
+        const response = await fetch('/config.json', { signal })
+        if (!response.ok) {
+            return {}
+        }
+        try {
+            const data = await response.json()
+            return data
+        } catch (error) {
+            console.error('Error parsing config:', error)
+            return {}
+        }
+    } catch (error) {
+        console.error('Error fetching config:', error)
+        return {}
+    }
 }
 
 // Main function to bootstrap the app
