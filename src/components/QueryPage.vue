@@ -1,102 +1,93 @@
 <template>
   <v-container class="fill-height">
     <v-responsive class="align-centerfill-height mx-auto">
-      <v-row>
-        <v-col cols="6">
-          <v-container>
-            <v-row>
-              <v-col cols="12">
-                <v-card
-                  class="py-4"
-                  color="surface-variant"
-                  rounded="lg"
-                  variant="outlined"
+      <v-card
+        style="max-width: 60rem; margin: 1em auto;"
+        color="surface-variant"
+        rounded="lg"
+        variant="outlined"
+      >
+        <template #title>
+          <h2 class="text-h5 font-weight-bold">Question</h2>
+        </template>
+        <v-card-text>
+          <v-textarea
+            v-model="query"
+            auto-grow
+            :disabled="loading"
+            clearable
+            filled
+            label="Enter your query"
+            placeholder="Type your query here"
+            rows="10"
+            @keydown.enter.prevent="sendQuery"
+          />
+        </v-card-text>
+      </v-card>
+      <v-card
+        class="my-4"
+        style="max-width: 60rem; margin: 1em auto;"
+        color="surface-variant"
+        rounded="lg"
+        variant="outlined"
+      >
+        <template #title>
+          <h2 class="text-h5 font-weight-bold">Answer</h2>
+        </template>
+        <v-card-text>
+          <v-textarea
+            v-model="response"
+            :loading="loading"
+            auto-grow
+            filled
+            label="Response"
+            readonly
+            rows="3"
+          />
+        </v-card-text>
+      </v-card>
+      <h2 vi-if="contexts.length > 0"
+        style="max-width: 60rem; margin: 1em auto;"
+        >Additional Context</h2>
+      <v-card
+        class="my-4"
+        style="max-width: 60rem; margin: 1em auto;"
+        color="surface-variant"
+        rounded="lg"
+        variant="outlined"
+        v-for="(context, i) in contexts"
+        :key="`context-${i}`"
+      >
+        <v-card-title>
+          <h2 class="text-h5 font-weight-bold">{{ context.metadata.type }}</h2>
+        </v-card-title>
+        <v-card-subtitle v-if="context.metadata.name">
+          <strong>Card Name:</strong> {{ context.metadata.name }}
+        </v-card-subtitle>
+        <v-card-text>
+          <pre v-if="nonScryfallIdentifiers(context).length > 0">{{
+            JSON.stringify(nonScryfallIdentifiers(context), null, 2)
+          }}</pre>
+          <p>{{ context.raw_content }}</p>
+          <template v-if="scryfallIdentifiers(context).length > 0">
+            <hr class="my-2" />
+            <ul class="ml-4">
+              <li
+                v-for="identifier in scryfallIdentifiers(context)"
+                :key="identifier"
+              >
+                Scryfall Tagger:
+                <a
+                  target="_blank"
+                  :href="`https://tagger.scryfall.com/card/oracle/${identifier}`"
                 >
-                  <template #title>
-                    <h2 class="text-h5 font-weight-bold">Question</h2>
-                  </template>
-                  <v-card-text>
-                    <v-textarea
-                      v-model="query"
-                      auto-grow
-                      :disabled="loading"
-                      clearable
-                      filled
-                      label="Enter your query"
-                      placeholder="Type your query here"
-                      rows="10"
-                      @keydown.enter.prevent="sendQuery"
-                    />
-                  </v-card-text>
-                </v-card>
-              </v-col>
-            </v-row>
-
-            <v-row>
-              <v-col cols="12">
-                <v-card
-                  class="py-4"
-                  color="surface-variant"
-                  rounded="lg"
-                  variant="outlined"
-                >
-                  <template #title>
-                    <h2 class="text-h5 font-weight-bold">Answer</h2>
-                  </template>
-                  <v-card-text>
-                    <v-textarea
-                      v-model="response"
-                      :loading="loading"
-                      auto-grow
-                      disabled
-                      filled
-                      label="Response"
-                      rows="10"
-                    />
-                  </v-card-text>
-                </v-card>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-col>
-        <v-col cols="6">
-          <v-card
-            class="my-4"
-            color="surface-variant"
-            rounded="lg"
-            variant="outlined"
-            v-for="(context, i) in contexts"
-            :key="`context-${i}`"
-          >
-            <v-card-title>
-              <h2 class="text-h5 font-weight-bold">Additional Context</h2>
-            </v-card-title>
-            <v-card-text>
-              Name: {{ context.metadata.name }} <br />
-              Type: {{ context.metadata.type }} <br />
-              Identifiers: {{ JSON.stringify(identifiers) }}
-              <br />
-              Raw:
-              <p>{{ context.raw_content }}</p>
-              <hr class="my-2"/>
-              <ul class="ml-4" v-if="scryfallIdentifiers(context).length > 0">
-                <li
-                  v-for="identifier in scryfallIdentifiers(context)"
-                  :key="identifier"
-                >
-                  Scryfall Tagger:
-                  <a
-                    target="_blank"
-                    :href="`https://tagger.scryfall.com/card/oracle/${identifier}`"
-                  >
-                    {{ identifier }}
-                  </a>
-                </li>
-              </ul>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
+                  {{ identifier }}
+                </a>
+              </li>
+            </ul>
+          </template>
+        </v-card-text>
+      </v-card>
     </v-responsive>
   </v-container>
 </template>
@@ -143,6 +134,21 @@ const sendQuery = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+const nonScryfallIdentifiers = (
+  context: ContextInfo
+): { name: string; value: string }[] => {
+  const output: { name: string; value: string }[] = [];
+  if (!context.metadata.identifiers) {
+    return output;
+  }
+  Object.entries(context.metadata.identifiers).map(([key, value]) => {
+    if (key !== "scryfallOracleId") {
+      output.push({ name: key, value: value });
+    }
+  });
+  return output;
 };
 
 const scryfallIdentifiers = (context: ContextInfo): string[] => {
