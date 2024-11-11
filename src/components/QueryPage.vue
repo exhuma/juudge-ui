@@ -1,5 +1,8 @@
 <template>
   <v-container class="fill-height">
+    <v-snackbar v-model="snackbar" :timeout="3000" color="error">
+      {{ snackbarMessage }}
+    </v-snackbar>
     <v-responsive class="align-centerfill-height mx-auto">
       <v-card
         style="max-width: 60rem; margin: 1em auto;"
@@ -101,6 +104,8 @@ const response = ref("");
 const contexts = ref([] as ContextInfo[]);
 const query = ref("");
 const loading = ref(false);
+const snackbar = ref(false);
+const snackbarMessage = ref("");
 
 // Access the global config value
 const instance = getCurrentInstance();
@@ -131,6 +136,8 @@ const sendQuery = async () => {
     contexts.value = result.contexts;
   } catch (error) {
     console.error("Failed to send query:", error);
+    snackbarMessage.value = "Failed to send query";
+    snackbar.value = true;
   } finally {
     loading.value = false;
   }

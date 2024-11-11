@@ -46,6 +46,9 @@ export class ApiService {
       },
       body: query,
     });
+    if (!response.ok) {
+      throw new Error("Failed to query");
+    }
     const data: QueryResponse = await response.json();
     return data;
   }
