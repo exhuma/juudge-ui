@@ -46,7 +46,7 @@
           />
         </v-card-text>
       </v-card>
-      <h2 vi-if="contexts.length > 0"
+      <h2 v-if="contexts.length > 0"
         style="max-width: 60rem; margin: 1em auto;"
         >Additional Context</h2>
       <v-card
